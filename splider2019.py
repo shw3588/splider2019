@@ -180,31 +180,48 @@ def api_post(title,content):
 	print http_post('http://www.xxxx.com/api_pnews',jdata_str)
 	
 #图片下载
-def down_pic(url):
-	file_path = C['SITE']['downpath']
-	time_str = time.strftime("%Y-%m-%d",time.localtime())
-	time_str2 = time.strftime("%Y%m%d%H%M%S",time.localtime())
-	try:
-		file_path = file_path+'/'+time_str
-		if not os.path.exists(file_path):
-			os.makedirs(file_path) #不使用os.makedir, os.makedirs功能同mkdir -p
-		#图片扩展名
-		file_suffix = os.path.splitext(url)[1]
-		#新文件名
-		file_name = time_str2+str(random.randint(0,999999))+file_suffix
-		file_name = file_path +'/'+file_name
-		urllib.urlretrieve(url,file_name)
-		return file_name.replace(file_path,C['SITE']['pichost']+'/'+time_str)
-	except Exception as e:
-		print(e)
-	return url
+
+def down_pic(url,file_path = '/data/img_file'):
+        global rules
+        time_str = time.strftime("%Y-%m-%d",time.localtime())
+        time_str2 = time.strftime("%Y%m%d%H%M%S",time.localtime())
+        try:
+                file_path = file_path+'/'+time_str
+                if not os.path.exists(file_path):
+                        os.makedirs(file_path) #不使用os.makedir, os.makedirs功能同mkdir -p
+                #图片扩展名
+                file_suffix = os.path.splitext(url)[1]
+                #新文件名
+                file_name = time_str2+str(random.randint(0,999999))+file_suffix
+                file_name = file_path +'/'+file_name
+                #urllib.urlretrieve(url,file_name)
+                headers={"User-Agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"}
+
+                r = requests.get(url, headers=headers, stream=True)
+                if r.status_code == 200:
+                        open(file_name, 'wb').write(r.content)
+                else:
+                        print r.content
+                        print str(r.status_code)+'===>>>'+url
+
+                return file_name.replace(file_path,'http://yourdomain'+'/'+time_str)
+        except Exception as e:
+                print(e)
+        return url
 
 #网址补全
 def check_http(url):
-	if url.find("://") == -1:
-		return  C['SITE']['home']+url
-	else:
-		return url
+        global rules
+        www_rule = '(.*?)\/\/(.+)'
+        check = re.search(www_rule,url)
+        if check != None:
+                schema = check.group(1)
+                query_url = check.group(0)
+                if schema != None and schema =='':
+                        url = rules.schema+':'+url
+        else:
+                url = rules.schema+'://'+url
+        return url
 
 #检查内容中的图片，对其进行网站补全 或 下载
 def check_img(content):
