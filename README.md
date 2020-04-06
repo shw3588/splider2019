@@ -8,9 +8,13 @@
 crontab 定时监控的抓取某个列表实时的更新，然后发布或保存  
 
 ## 基本依赖：
+
 pip install --upgrade pip
+
 yum install -y mysql-devel
+
 pip install MySQL-python -i https://pypi.tuna.tsinghua.edu.cn/simple/
+
 pip install requests -i https://pypi.tuna.tsinghua.edu.cn/simple/
 
 
